@@ -364,6 +364,7 @@
         // VARIABEL KONFIGURASI API KEY OTOMATIS DARI DASHBOARD
         let apiKey = '';
         let modelName = 'gemini-2.5-flash'; 
+        let systemReference = ""; // BARU: Menyimpan referensi aturan dari dashboard
 
         function handleUnitSelection() {
             const select = document.getElementById('unit-select');
@@ -405,6 +406,7 @@
             if (event.data && event.data.type === 'UPDATE_CONFIG') {
                 apiKey = event.data.key;
                 modelName = event.data.model;
+                if (event.data.contextReference) systemReference = event.data.contextReference; // BARU
             }
         });
 
@@ -488,8 +490,10 @@
               "Nama Layanan Utama 2": ["Sub kegiatan spesifik 1", "Sub kegiatan spesifik 2"]
             }`;
 
+            const promptWithRef = prompt + (systemReference ? `\n\n=== DATABASE REFERENSI ATURAN ===\nBerikut adalah referensi aturan resmi. Jadikan acuan jika relevan dengan pembagian unit/layanan RS:\n${systemReference}` : "");
+
             try {
-                const hierarchy = await callGeminiJson(prompt);
+                const hierarchy = await callGeminiJson(promptWithRef);
                 document.getElementById('sintesa-loader').classList.add('hidden');
                 document.getElementById('sintesa-loader').style.display = 'none';
                 
@@ -747,8 +751,10 @@
             PENTING: Jangan memberikan usulan yang persis sama dengan indikator Standar Pelayanan Minimal Mandatori RS (KMK 129/2008). Jika esensinya mirip, Anda WAJIB memberikan kalimat penegasan esensi pembeda (contoh: lokus khusus, durasi lebih spesifik, dll).
             Output WAJIB JSON array of strings. Skema: ["Judul 1", "Judul 2", ...]`;
             
+            const promptWithRef = prompt + (systemReference ? `\n\n=== DATABASE REFERENSI ATURAN ===\nBerikut adalah referensi aturan resmi. WAJIB jadikan acuan utama dalam merumuskan indikator jika relevan (jangan mengarang jika sudah diatur):\n${systemReference}` : "");
+
             try {
-                const suggestions = await callGeminiJson(prompt);
+                const suggestions = await callGeminiJson(promptWithRef);
                 document.getElementById('impp-loader').classList.add('hidden');
                 
                 if (suggestions && Array.isArray(suggestions)) {
@@ -783,8 +789,10 @@
             ATURAN 2: Jangan mengusulkan indikator yang sama persis dengan indikator SPM mandatori (KMK 129/2008). Jika mirip, berikan esensi pembedanya.
             Output WAJIB JSON array of strings. Skema: ["Judul 1", "Judul 2", ...]`;
             
+            const promptWithRef = prompt + (systemReference ? `\n\n=== DATABASE REFERENSI ATURAN ===\nBerikut adalah referensi aturan resmi. WAJIB jadikan acuan utama dalam merumuskan indikator jika relevan (jangan mengarang jika sudah diatur):\n${systemReference}` : "");
+
             try {
-                const suggestions = await callGeminiJson(prompt);
+                const suggestions = await callGeminiJson(promptWithRef);
                 document.getElementById('imppel-loader').classList.add('hidden');
                 
                 if (suggestions && Array.isArray(suggestions)) {
@@ -832,8 +840,10 @@
               "periode_pengumpulan": "string", "penyajian_data": "string", "periode_analisis": "string", "penanggung_jawab": "string"
             }`;
 
+            const promptWithRef = prompt + (systemReference ? `\n\n=== DATABASE REFERENSI ATURAN ===\nBerikut adalah referensi aturan resmi. WAJIB jadikan acuan utama dalam menyusun isi kamus/profil indikator ini (terutama untuk target, definisi, dan formula jika ada di aturan):\n${systemReference}` : "");
+
             try {
-                const data = await callGeminiJson(prompt);
+                const data = await callGeminiJson(promptWithRef);
                 document.getElementById('profile-loader').classList.add('hidden');
                 if (data) { saveProfileData(type, finalTitle, data); document.getElementById('collection-step').scrollIntoView({ behavior: 'smooth' }); }
                 else { showModal('Gagal menyusun profil indikator dari AI.'); document.getElementById('collection-output-container').classList.remove('hidden'); }
@@ -864,8 +874,10 @@
               "penyajian_data": "string", "periode_analisis": "string", "penanggung_jawab": "string"
             }`;
 
+            const promptWithRef = prompt + (systemReference ? `\n\n=== DATABASE REFERENSI ATURAN ===\nBerikut adalah referensi aturan resmi. WAJIB jadikan acuan utama dalam menyusun isi kamus/profil indikator ini (terutama untuk target, definisi, dan formula jika ada di aturan):\n${systemReference}` : "");
+
             try {
-                const data = await callGeminiJson(prompt);
+                const data = await callGeminiJson(promptWithRef);
                 if (data) {
                     const finalTitle = `[MANDATORI SPM] ${indicatorName}`;
                     saveProfileData('imppel', finalTitle, data, false); // Save directly to collection
